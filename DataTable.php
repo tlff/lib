@@ -109,9 +109,10 @@ class DataTable
         *                                  "2"=>"USERNAME",
         *                             ),
         *                             "where"=>array(      //and和or可以同时调用  但是or是用来做查询的  and则是初始数据的查询条件
-        *                                  "and"=>array(      //表示会查询state=1 and level=2 的数据
+        *                                  "and"=>array(      //表示会查询state=1 and level=2 and (a=1 or a=2) 的数据
         *                                      "state"=>'1',
         *                                      "level"=>"2",
+        *                                      "a"=>[1,2]
         *                                  ),
         *                                  "or"=>array("ID","USERNAME"),   //用户查询的时候回根据这里的参数作为查询的列  例如 当search=root时   就会查询 ID like %root% or USERNAME like %root%
         *                                  "or2"=>[ //这里面的会用or连接 例如下面的数组会变成: a=1 or a=2 or b=2
@@ -405,29 +406,32 @@ class DataTable
     }
 
     /**
-     * 预处理where语句参数 ，将多条where语句用or或者and连接起来.
+     * 预处理where语句参数 ，将多条where语句用or或者and连接起来
      *
      * @param data array 待处理的参数
      * @param is_or 查询条件是and还是or  默认是and
-     *
-     * @return string 处理完成的字符串
+     * @return  string 处理完成的字符串
      */
     protected function _processWhereParams($data, $is_or = true)
     {
         $field_list = array();
-        $data_list = array();
-
         if ($is_or) {
             foreach ($data as $field_name => $field_value) {
-                array_push($field_list, '`'.$field_name.'`='."'{$field_value}'");
+                if(is_array($field_value)){
+                    $data_list  = array();
+                    foreach ($field_value as $key => $value) {
+                        array_push($data_list, '`'. $field_name . '`=' . "'{$value}'");
+                    }
+                    array_push($field_list, "(".implode(' OR ', $data_list).")");
+                }else{
+                    array_push($field_list, '`' . $field_name . '`=' . "'{$field_value}'");
+                }
             }
-
             return implode(' AND ', $field_list);
         } else {
             foreach ($data as $field_name => $field_value) {
-                array_push($field_list, '`'.$field_value.'` LIKE '."'".'%'.$this->_search.'%'."'");
+                array_push($field_list, '`' . $field_value . '` LIKE ' . "'" . '%' . $this->_search . '%' . "'");
             }
-
             return implode(' OR ', $field_list);
         }
     }
@@ -445,6 +449,6 @@ class DataTable
             }
         }
 
-        return "(".implode(' OR ', $field_list).")";
+        return implode(' OR ', $field_list);
     }
 }

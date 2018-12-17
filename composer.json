@@ -7,5 +7,10 @@
             "email": "961017514@qq.com"
         }
     ],
-    "require": {}
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "DataTable\\": "DataTable"
+        }
+    }
 }

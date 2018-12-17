@@ -1,0 +1,11 @@
+{
+    "name": "tlf/lib",
+    "type": "library",
+    "authors": [
+        {
+            "name": "tlff",
+            "email": "961017514@qq.com"
+        }
+    ],
+    "require": {}
+}
